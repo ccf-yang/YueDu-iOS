@@ -1,0 +1,26 @@
+# Xcode
+.DS_Store
+*.xcodeproj/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+.swiftpm/xcode/
+build/
+*.app
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Swift Package Manager
+.build/
+.swiftpm/
+*.xcframework
+
+# Misc
+.env
+.env.local
+node_modules/
+.DS_Store
+.AppleDouble
+.LSOverride

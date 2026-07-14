@@ -1,0 +1,14 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		3B0000001111111100000000 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+			fileRef = 3B0000002222222200000000 /* App.swift */;
+		};
+	};
+	rootObject = 3B0000003333333300000000 /* Project object */;
+}
