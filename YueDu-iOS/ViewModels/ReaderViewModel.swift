@@ -1,137 +1,203 @@
 import Foundation
 import Combine
 
-/// 阅读器视图模型
 class ReaderViewModel: ObservableObject {
     @Published var book: Book
     @Published var chapters: [BookChapter] = []
     @Published var currentChapter: BookChapter?
     @Published var currentContent: String?
-    @Published var fontSize: Int = 16 { didSet { updateContent() } }
-    @Published var lineSpacing: CGFloat = 6 { didSet { updateContent() } }
-    @Published var isLoading: Bool = false
+    @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var progress: Double = 0 // 阅读进度
-    
-    private var currentChapterIndex: Int = 0
-    private var contentCache: [String: String] = [:] // 缓存章节内容
-    
+    @Published var progress: Double = 0
+    @Published var bookmarks: [Bookmark] = []
+
+    // 阅读设置
+    @Published var fontSize: Int = 16
+    @Published var lineSpacing: CGFloat = 8
+    @Published var bgColorIndex: Int = 0   // 0=白,1=护眼,2=夜间
+
+    private(set) var currentChapterIndex: Int = 0
+    private var contentCache: [String: String] = [:]
+    private let db = DatabaseService.shared
+    private let sourceService = BookSourceService.shared
+
+    static let bgColors: [(name: String, bg: String, fg: String)] = [
+        ("白天", "#FFFFFF", "#1C1C1E"),
+        ("护眼", "#C7EDCC", "#1C1C1E"),
+        ("夜间", "#1C1C1E", "#AAAAAA"),
+        ("牛皮纸", "#F5DEB3", "#3E2723"),
+    ]
+
     init(book: Book) {
         self.book = book
         self.currentChapterIndex = book.durChapterIndex
+        loadReadingSettings()
     }
-    
-    /// 加载章节列表
+
+    // MARK: - 数据加载
+
     func loadChapters() {
-        DispatchQueue.main.async {
-            self.chapters = DatabaseService.shared.getChapters(for: self.book.id)
-            
-            if self.currentChapterIndex < self.chapters.count {
-                self.currentChapter = self.chapters[self.currentChapterIndex]
-            } else if !self.chapters.isEmpty {
-                self.currentChapter = self.chapters[0]
-                self.currentChapterIndex = 0
-            }
-            
-            self.loadCurrentChapterContent()
-        }
-    }
-    
-    /// 加载当前章节内容
-    private func loadCurrentChapterContent() {
-        guard let chapter = currentChapter else { return }
-        
         isLoading = true
-        
-        // TODO: 从数据库或网络获取章节内容
-        // 这里需要实现：
-        // 1. 检查本地缓存
-        // 2. 如果没有，从书源下载
-        // 3. 解析内容（HTML、EPUB 等）
-        // 4. 存储到本地
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // 模拟加载
-            self.currentContent = """
-            \(chapter.title)
-            
-            这是第 \(chapter.index + 1) 章的内容。
-            
-            在实际应用中，这里会显示从书源获取的真实内容。
-            
-            支持的格式包括：
-            - 纯文本
-            - HTML
-            - EPUB
-            - 本地 TXT 文件
-            
-            内容会根据阅读设置进行格式化。
-            """
-            self.isLoading = false
-            self.updateProgress()
+        DispatchQueue.global(qos: .userInitiated).async {
+            let chs = self.db.getChapters(for: self.book.id)
+            DispatchQueue.main.async {
+                self.chapters = chs
+                if chs.isEmpty {
+                    // 没有缓存章节，尝试在线获取
+                    Task { await self.fetchChaptersOnline() }
+                } else {
+                    self.jumpToChapter(index: self.currentChapterIndex)
+                    self.isLoading = false
+                }
+            }
         }
     }
-    
-    /// 更新内容显示
-    private func updateContent() {
-        // 触发视图更新
-        objectWillChange.send()
+
+    private func fetchChaptersOnline() async {
+        guard let source = db.getAllBookSources(enabledOnly: true)
+                .first(where: { $0.bookSourceUrl == book.origin }) else {
+            await MainActor.run { self.isLoading = false; self.errorMessage = "未找到对应书源" }
+            return
+        }
+        do {
+            let chs = try await sourceService.fetchChapterList(book: book, source: source)
+            db.saveChapters(chs)
+            await MainActor.run {
+                self.chapters = chs
+                self.jumpToChapter(index: self.currentChapterIndex)
+                self.isLoading = false
+            }
+        } catch {
+            await MainActor.run { self.isLoading = false; self.errorMessage = error.localizedDescription }
+        }
     }
-    
-    /// 转到下一章
+
+    func loadCurrentChapterContent() {
+        guard let chapter = currentChapter else { return }
+        isLoading = true
+        errorMessage = nil
+
+        // 内存缓存优先
+        if let cached = contentCache[chapter.url] {
+            currentContent = cached
+            isLoading = false
+            return
+        }
+
+        Task {
+            // 本地书籍：从 DB 缓存读取
+            if book.origin == "local" {
+                let content = db.getCachedContent(bookUrl: book.id, chapterUrl: chapter.url) ?? "暂无内容"
+                contentCache[chapter.url] = content
+                await MainActor.run { self.currentContent = content; self.isLoading = false }
+                return
+            }
+            // 网络书源：先查 DB 缓存，再抓取
+            if let dbContent = db.getCachedContent(bookUrl: book.id, chapterUrl: chapter.url) {
+                contentCache[chapter.url] = dbContent
+                await MainActor.run { self.currentContent = dbContent; self.isLoading = false }
+                return
+            }
+            guard let source = db.getAllBookSources(enabledOnly: true)
+                    .first(where: { $0.bookSourceUrl == book.origin }) else {
+                await MainActor.run { self.isLoading = false; self.errorMessage = "未找到对应书源" }
+                return
+            }
+            do {
+                let content = try await sourceService.fetchChapterContent(chapter: chapter, source: source)
+                contentCache[chapter.url] = content
+                await MainActor.run { self.currentContent = content; self.isLoading = false }
+            } catch {
+                await MainActor.run { self.isLoading = false; self.errorMessage = "加载失败: \(error.localizedDescription)" }
+            }
+        }
+    }
+
+    // MARK: - 章节导航
+
+    func jumpToChapter(index: Int) {
+        guard !chapters.isEmpty else { return }
+        let safeIdx = max(0, min(index, chapters.count - 1))
+        currentChapterIndex = safeIdx
+        currentChapter = chapters[safeIdx]
+        loadCurrentChapterContent()
+        saveProgress()
+    }
+
     func nextChapter() {
         guard currentChapterIndex < chapters.count - 1 else { return }
-        currentChapterIndex += 1
-        currentChapter = chapters[currentChapterIndex]
-        loadCurrentChapterContent()
-        updateProgress()
+        jumpToChapter(index: currentChapterIndex + 1)
     }
-    
-    /// 转到上一章
+
     func previousChapter() {
         guard currentChapterIndex > 0 else { return }
-        currentChapterIndex -= 1
-        currentChapter = chapters[currentChapterIndex]
-        loadCurrentChapterContent()
-        updateProgress()
+        jumpToChapter(index: currentChapterIndex - 1)
     }
-    
-    /// 转到指定章节
+
     func goToChapter(_ chapter: BookChapter) {
-        guard let index = chapters.firstIndex(where: { $0.id == chapter.id }) else { return }
-        currentChapterIndex = index
-        currentChapter = chapter
-        loadCurrentChapterContent()
-        updateProgress()
-    }
-    
-    /// 增加字体大小
-    func increaseFontSize() {
-        if fontSize < 24 {
-            fontSize += 1
+        if let idx = chapters.firstIndex(where: { $0.id == chapter.id }) {
+            jumpToChapter(index: idx)
         }
     }
-    
-    /// 减小字体大小
-    func decreaseFontSize() {
-        if fontSize > 12 {
-            fontSize -= 1
-        }
+
+    // MARK: - 进度管理
+
+    func saveProgress() {
+        var updated = book
+        updated.durChapterIndex = currentChapterIndex
+        updated.durChapterTitle = currentChapter?.title
+        updated.durChapterTime  = Date()
+        progress = chapters.isEmpty ? 0 : Double(currentChapterIndex) / Double(chapters.count)
+        db.saveBook(updated)
+        book = updated
     }
-    
-    /// 更新阅读进度
-    private func updateProgress() {
-        if !chapters.isEmpty {
-            progress = Double(currentChapterIndex) / Double(chapters.count)
-        }
-        
-        // 保存阅读进度到数据库
-        var updatedBook = book
-        updatedBook.durChapterIndex = currentChapterIndex
-        updatedBook.durChapterTitle = currentChapter?.title
-        updatedBook.durChapterTime = Date()
-        updatedBook.durChapterPos = 0
-        
-        _ = DatabaseService.shared.saveBook(updatedBook)
+
+    // MARK: - 字体行距
+
+    func increaseFontSize() { if fontSize < 28 { fontSize += 1; saveReadingSettings() } }
+    func decreaseFontSize() { if fontSize > 12 { fontSize -= 1; saveReadingSettings() } }
+
+    // MARK: - 书签
+
+    func loadBookmarks() {
+        bookmarks = db.getBookmarks(for: book.id)
     }
+
+    func addBookmark(pos: Int) {
+        guard let chapter = currentChapter else { return }
+        let snippet = String((currentContent ?? "").prefix(50))
+        let bm = Bookmark(bookUrl: book.id, chapterIndex: currentChapterIndex,
+                          chapterTitle: chapter.title, chapterPos: pos, content: snippet)
+        db.saveBookmark(bm)
+        loadBookmarks()
+    }
+
+    func deleteBookmark(_ bm: Bookmark) {
+        db.deleteBookmark(bm.id)
+        bookmarks.removeAll { $0.id == bm.id }
+    }
+
+    // MARK: - 持久化设置
+
+    private func loadReadingSettings() {
+        let d = UserDefaults.standard
+        fontSize      = d.integer(forKey: "reader_fontSize").nonZero ?? 16
+        lineSpacing   = CGFloat(d.double(forKey: "reader_lineSpacing")).nonZero ?? 8
+        bgColorIndex  = d.integer(forKey: "reader_bgColor")
+    }
+
+    private func saveReadingSettings() {
+        let d = UserDefaults.standard
+        d.set(fontSize,         forKey: "reader_fontSize")
+        d.set(Double(lineSpacing), forKey: "reader_lineSpacing")
+        d.set(bgColorIndex,     forKey: "reader_bgColor")
+    }
+}
+
+// MARK: - 辅助扩展
+private extension Int {
+    var nonZero: Int? { self == 0 ? nil : self }
+}
+private extension CGFloat {
+    var nonZero: CGFloat? { self == 0 ? nil : self }
 }
