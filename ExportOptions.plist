@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  ExportOptions.plist - 无证书导出配置
+  用于 xcodebuild -exportArchive 时指定导出方式
+
+  注意：当前 workflow 使用 CODE_SIGNING_ALLOWED=NO 直接打包 .app
+  本文件供后续有证书时升级使用
+-->
+<plist version="1.0">
+<dict>
+    <!-- development: 用于开发测试设备 -->
+    <!-- ad-hoc: 分发给指定设备（最多100台） -->
+    <key>method</key>
+    <string>development</string>
+
+    <!-- 签名方式：手动或自动 -->
+    <key>signingStyle</key>
+    <string>automatic</string>
+
+    <!-- 是否剥离 Swift 符号（减小包体积） -->
+    <key>stripSwiftSymbols</key>
+    <true/>
+
+    <!-- 禁用 Bitcode（iOS 16+ 已废弃） -->
+    <key>uploadBitcode</key>
+    <false/>
+
+    <!-- 压缩方式 -->
+    <key>compileBitcode</key>
+    <false/>
+
+    <!-- 包含调试符号 -->
+    <key>uploadSymbols</key>
+    <true/>
+</dict>
+</plist>
