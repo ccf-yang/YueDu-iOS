@@ -1,58 +1,25 @@
 import Foundation
 
-/// 日期工具类
 class DateUtils {
     static let shared = DateUtils()
-    
-    private let dateFormatter = DateFormatter()
-    
-    /// 将日期格式化为字符串
+    private let formatter = DateFormatter()
+
     func format(_ date: Date, format: String = "yyyy-MM-dd HH:mm") -> String {
-        dateFormatter.dateFormat = format
-        return dateFormatter.string(from: date)
+        formatter.dateFormat = format
+        return formatter.string(from: date)
     }
-    
-    /// 将时间戳转换为日期
-    func dateFromTimestamp(_ timestamp: TimeInterval) -> Date {
-        return Date(timeIntervalSince1970: timestamp)
-    }
-    
-    /// 将日期转换为时间戳
-    func timestampFromDate(_ date: Date) -> TimeInterval {
-        return date.timeIntervalSince1970
-    }
-    
-    /// 获取相对时间文本（如 "2 小时前"）
+
     func relativeTime(from date: Date) -> String {
-        let calendar = Calendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date, to: now)
-        
-        if let year = components.year, year > 0 {
-            return "\(year)年前"
-        }
-        if let month = components.month, month > 0 {
-            return "\(month)个月前"
-        }
-        if let day = components.day, day > 0 {
-            return "\(day)天前"
-        }
-        if let hour = components.hour, hour > 0 {
-            return "\(hour)小时前"
-        }
-        if let minute = components.minute, minute > 0 {
-            return "\(minute)分钟前"
-        }
+        let c = Calendar.current.dateComponents([.year,.month,.day,.hour,.minute], from: date, to: Date())
+        if let y = c.year,  y > 0 { return "\(y)年前" }
+        if let mo = c.month, mo > 0 { return "\(mo)个月前" }
+        if let d = c.day,   d > 0 { return "\(d)天前" }
+        if let h = c.hour,  h > 0 { return "\(h)小时前" }
+        if let m = c.minute, m > 0 { return "\(m)分钟前" }
         return "刚刚"
     }
-    
-    /// 判断是否是今天
-    func isToday(_ date: Date) -> Bool {
-        return Calendar.current.isDateInToday(date)
-    }
-    
-    /// 判断是否是昨天
-    func isYesterday(_ date: Date) -> Bool {
-        return Calendar.current.isDateInYesterday(date)
-    }
+
+    func isToday(_ date: Date) -> Bool { Calendar.current.isDateInToday(date) }
+    func isYesterday(_ date: Date) -> Bool { Calendar.current.isDateInYesterday(date) }
+    func dateFromTimestamp(_ ts: TimeInterval) -> Date { Date(timeIntervalSince1970: ts) }
 }
