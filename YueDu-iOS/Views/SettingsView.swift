@@ -65,12 +65,15 @@ struct SettingsView: View {
                     HStack {
                         Text("版本")
                         Spacer()
-                        Text("\(vm.appVersion) (\(vm.buildNumber))").foregroundStyle(.secondary)
+                        Text("\(vm.appVersion) (\(vm.buildNumber))")
+                            .foregroundStyle(Color.secondary)
                     }
                     HStack {
                         Text("项目主页")
                         Spacer()
-                        Text("github.com/gedoor/legado").font(.caption).foregroundStyle(.accentColor)
+                        Text("github.com/gedoor/legado")
+                            .font(.caption)
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
             }
