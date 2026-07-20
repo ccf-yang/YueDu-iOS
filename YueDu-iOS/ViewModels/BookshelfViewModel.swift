@@ -1,92 +1,83 @@
 import Foundation
 
-/// 书架视图模型
 class BookshelfViewModel: ObservableObject {
     @Published var books: [Book] = []
-    @Published var isLoading: Bool = false
+    @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var sortBy: SortOption = .recent // 排序方式
-    
+    @Published var sortBy: SortOption = .recent
+    @Published var filterGroup: Int = 0
+
     enum SortOption: String, CaseIterable {
         case recent = "最近阅读"
         case name = "书名"
         case author = "作者"
         case updateTime = "更新时间"
     }
-    
-    /// 加载书籍
+
     func loadBooks() {
         isLoading = true
-        
-        DispatchQueue.main.async {
-            self.books = DatabaseService.shared.getAllBooks()
-            self.sortBooks()
-            self.isLoading = false
+        DispatchQueue.global(qos: .userInitiated).async {
+            let all = DatabaseService.shared.getAllBooks()
+            DispatchQueue.main.async {
+                self.books = all
+                self.sortBooks()
+                self.isLoading = false
+            }
         }
     }
-    
-    /// 添加书籍
+
+    @discardableResult
     func addBook(_ book: Book) -> Bool {
-        let success = DatabaseService.shared.saveBook(book)
-        if success {
-            loadBooks()
-        } else {
-            errorMessage = "添加书籍失败"
-        }
-        return success
+        let ok = DatabaseService.shared.saveBook(book)
+        if ok { loadBooks() } else { errorMessage = "添加书籍失败" }
+        return ok
     }
-    
-    /// 删除书籍
+
+    @discardableResult
     func deleteBook(_ book: Book) -> Bool {
-        let success = DatabaseService.shared.deleteBook(book.id)
-        if success {
-            loadBooks()
-        } else {
-            errorMessage = "删除书籍失败"
-        }
-        return success
+        let ok = DatabaseService.shared.deleteBook(book.id)
+        if ok { books.removeAll { $0.id == book.id } } else { errorMessage = "删除书籍失败" }
+        return ok
     }
-    
-    /// 更新书籍
+
+    @discardableResult
     func updateBook(_ book: Book) -> Bool {
-        let success = DatabaseService.shared.saveBook(book)
-        if success {
-            loadBooks()
-        } else {
-            errorMessage = "更新书籍失败"
+        let ok = DatabaseService.shared.saveBook(book)
+        if ok {
+            if let idx = books.firstIndex(where: { $0.id == book.id }) { books[idx] = book }
         }
-        return success
+        return ok
     }
-    
-    /// 排序书籍
+
     func sortBooks() {
         switch sortBy {
-        case .recent:
-            books.sort { $0.durChapterTime > $1.durChapterTime }
-        case .name:
-            books.sort { $0.name < $1.name }
-        case .author:
-            books.sort { $0.author < $1.author }
-        case .updateTime:
-            books.sort { $0.latestChapterTime > $1.latestChapterTime }
+        case .recent:     books.sort { $0.durChapterTime > $1.durChapterTime }
+        case .name:       books.sort { $0.name < $1.name }
+        case .author:     books.sort { $0.author < $1.author }
+        case .updateTime: books.sort { $0.latestChapterTime > $1.latestChapterTime }
         }
     }
-    
-    /// 搜索书籍
+
+    var displayedBooks: [Book] {
+        let filtered = filterGroup == 0 ? books : books.filter { $0.group == filterGroup }
+        return filtered
+    }
+
+    var groupNames: [(id: Int, name: String)] {
+        var seen = Set<Int>()
+        var result: [(Int, String)] = [(0, "全部")]
+        for b in books where !seen.contains(b.group) {
+            seen.insert(b.group)
+            if b.group != 0 { result.append((b.group, "分组\(b.group)")) }
+        }
+        return result
+    }
+
     func searchBooks(keyword: String) -> [Book] {
-        guard !keyword.isEmpty else { return books }
-        
-        return books.filter { book in
-            book.name.localizedCaseInsensitiveContains(keyword) ||
-            book.author.localizedCaseInsensitiveContains(keyword)
+        guard !keyword.isEmpty else { return displayedBooks }
+        return displayedBooks.filter {
+            $0.name.localizedCaseInsensitiveContains(keyword) ||
+            $0.author.localizedCaseInsensitiveContains(keyword)
         }
-    }
-    
-    /// 按分组过滤
-    func filterBooks(by group: Int) -> [Book] {
-        if group == 0 {
-            return books
-        }
-        return books.filter { $0.group == group }
     }
 }
