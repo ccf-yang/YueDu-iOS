@@ -10,6 +10,10 @@ on:
       - '**.md'
       - '.github/**'
 
+# 显式声明写权限（修复 Release 403 问题）
+permissions:
+  contents: write
+
 jobs:
   build-ipa:
     name: Build IPA on macOS
