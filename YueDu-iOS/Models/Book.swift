@@ -77,18 +77,4 @@ struct Book: Identifiable, Codable {
     }
 }
 
-/// 阅读配置
-struct ReadConfig: Codable {
-    var reverseToc: Bool = false
-    var pageAnim: Int? = nil
-    var reSegment: Bool = false
-    var imageStyle: String? = nil
-    var useReplaceRule: Bool? = nil
-    var delTag: Int = 0
-    var ttsEngine: String? = nil
-    var splitLongChapter: Bool = true
-    var readSimulating: Bool = false
-    var startDate: Date? = nil
-    var startChapter: Int? = nil
-    var dailyChapters: Int = 3
-}
+// ReadConfig 定义在 ReadConfig.swift，此处不重复定义
