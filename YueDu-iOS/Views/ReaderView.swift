@@ -227,11 +227,13 @@ struct TocView: View {
                 } label: {
                     HStack {
                         Text(chapter.title)
-                            .foregroundStyle(chapter.index == vm.currentChapterIndex ? .accentColor : .primary)
+                            .foregroundStyle(chapter.index == vm.currentChapterIndex
+                                ? Color.accentColor
+                                : Color.primary)
                         Spacer()
                         if chapter.index == vm.currentChapterIndex {
                             Image(systemName: "bookmark.fill")
-                                .font(.caption).foregroundStyle(.accentColor)
+                                .font(.caption).foregroundStyle(Color.accentColor)
                         }
                         if chapter.isVip {
                             Text("VIP").font(.caption2).foregroundStyle(.orange)
