@@ -1,6 +1,9 @@
 import Foundation
 import SQLite3
 
+// SQLITE_TRANSIENT 在 Swift 中需要手动定义（-1 转为函数指针类型）
+private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
 /// 数据库服务 - 管理本地 SQLite 数据库
 class DatabaseService {
     static let shared = DatabaseService()
