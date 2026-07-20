@@ -1,0 +1,129 @@
+name: 构建 YueDu-iOS IPA（无证书版）
+
+on:
+  # 手动触发
+  workflow_dispatch:
+  # 推送到 bd 分支时自动触发
+  push:
+    branches: [ bd ]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+
+jobs:
+  build-ipa:
+    name: Build IPA on macOS
+    runs-on: macos-15        # 带 Xcode 16，支持 Swift 5.10+
+    timeout-minutes: 60
+
+    steps:
+      # ── 1. 检出代码 ──────────────────────────────────────────────────────────
+      - name: Checkout bd branch
+        uses: actions/checkout@v4
+        with:
+          ref: bd
+
+      # ── 2. 选择 Xcode 版本 ───────────────────────────────────────────────────
+      - name: Select Xcode 16
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          xcodebuild -version
+
+      # ── 3. 解析 SPM 依赖（ZipArchive） ──────────────────────────────────────
+      - name: Resolve Swift Package dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project YueDu-iOS.xcodeproj \
+            -scheme YueDu-iOS \
+            -clonedSourcePackagesDirPath ./SourcePackages
+
+      # ── 4. 编译 .app（无签名）───────────────────────────────────────────────
+      # CODE_SIGNING_ALLOWED=NO：跳过签名，仅产出 .app
+      - name: Build .app (no signing)
+        run: |
+          xcodebuild build \
+            -project YueDu-iOS.xcodeproj \
+            -scheme YueDu-iOS \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            -clonedSourcePackagesDirPath ./SourcePackages \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            SWIFT_SERIALIZE_DEBUGGING_OPTIONS=NO \
+            BUILD_DIR=$PWD/build \
+            | xcpretty --color || true
+
+      # ── 5. 找到 .app 并打包成 Payload/xxx.app 结构的 IPA ───────────────────
+      - name: Package .app into IPA
+        run: |
+          set -e
+
+          # 查找编译产物 .app
+          APP_PATH=$(find $PWD/build -name "YueDu-iOS.app" -type d | head -1)
+          echo "找到 .app: $APP_PATH"
+
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ 未找到 .app，构建可能失败"
+            find $PWD/build -type d | head -30
+            exit 1
+          fi
+
+          # 构造 Payload 目录
+          mkdir -p /tmp/IPA_Payload/Payload
+          cp -r "$APP_PATH" /tmp/IPA_Payload/Payload/
+
+          # 压缩为 .ipa（IPA 本质就是 Payload.zip 改名）
+          cd /tmp/IPA_Payload
+          zip -r YueDu-iOS-unsigned.ipa Payload/
+          echo "✅ IPA 打包完成: $(du -sh YueDu-iOS-unsigned.ipa)"
+
+          # 移回工作目录
+          cp YueDu-iOS-unsigned.ipa $GITHUB_WORKSPACE/YueDu-iOS-unsigned.ipa
+
+      # ── 6. 上传 IPA 为 Artifact（90天有效） ─────────────────────────────────
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YueDu-iOS-unsigned-ipa
+          path: YueDu-iOS-unsigned.ipa
+          retention-days: 90
+
+      # ── 7. 创建 GitHub Release 并附带 IPA ───────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "YueDu-iOS v3.0 Build #${{ github.run_number }}"
+          body: |
+            ## 自动构建 IPA（无签名版）
+
+            ### 安装方式（自签名）
+
+            **方式1：使用 AltStore / Sideloadly**
+            1. 下载下方的 `YueDu-iOS-unsigned.ipa`
+            2. 用 [Sideloadly](https://sideloadly.io) 安装到 iPhone
+            3. 设置 → 通用 → VPN与设备管理 → 信任开发者
+
+            **方式2：使用 esign / GBox（越狱设备）**
+            1. 下载 IPA 到设备
+            2. 用 esign 进行自签名
+            3. 安装运行
+
+            **方式3：使用 zsign 命令行签名**
+            ```bash
+            # 准备自签证书（p12）后执行
+            zsign -k your.p12 -p password -m embedded.mobileprovision \
+                  -o YueDu-iOS-signed.ipa YueDu-iOS-unsigned.ipa
+            ```
+
+            ### 构建信息
+            - 分支: `bd`
+            - Commit: ${{ github.sha }}
+            - 构建时间: ${{ github.event.head_commit.timestamp }}
+          files: YueDu-iOS-unsigned.ipa
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
