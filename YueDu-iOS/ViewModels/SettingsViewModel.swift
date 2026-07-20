@@ -1,97 +1,111 @@
 import Foundation
 
-/// 设置视图模型
 class SettingsViewModel: ObservableObject {
-    @Published var fontSize: Int = 16
-    @Published var lineSpacing: CGFloat = 6
-    @Published var brightness: CGFloat = 1.0
     @Published var bookSources: [BookSource] = []
-    @Published var isExporting: Bool = false
-    @Published var isImporting: Bool = false
-    @Published var errorMessage: String?
-    
-    /// 加载设置
-    func loadSettings() {
-        // 从 UserDefaults 加载用户偏好设置
-        let defaults = UserDefaults.standard
-        fontSize = defaults.integer(forKey: "fontSize")
-        if fontSize == 0 { fontSize = 16 }
-        
-        lineSpacing = CGFloat(defaults.double(forKey: "lineSpacing"))
-        if lineSpacing == 0 { lineSpacing = 6 }
-        
-        brightness = CGFloat(defaults.double(forKey: "brightness"))
-        if brightness == 0 { brightness = 1.0 }
-    }
-    
-    /// 保存设置
-    func saveSettings() {
-        let defaults = UserDefaults.standard
-        defaults.set(fontSize, forKey: "fontSize")
-        defaults.set(Double(lineSpacing), forKey: "lineSpacing")
-        defaults.set(Double(brightness), forKey: "brightness")
-    }
-    
-    /// 加载书源
+    @Published var isLoading = false
+    @Published var alertMessage: String?
+    @Published var showAlert = false
+
+    private let db = DatabaseService.shared
+    private let bsService = BookSourceService.shared
+    private let dmService = DataManagementService.shared
+
     func loadBookSources() {
-        // TODO: 从数据库加载书源
-        DispatchQueue.main.async {
-            self.bookSources = []
-        }
+        bookSources = db.getAllBookSources()
     }
-    
-    /// 添加书源
+
+    @discardableResult
     func addBookSource(_ source: BookSource) -> Bool {
-        // TODO: 保存到数据库
-        loadBookSources()
-        return true
+        let ok = db.saveBookSource(source)
+        if ok { loadBookSources() }
+        return ok
     }
-    
-    /// 删除书源
+
+    @discardableResult
     func deleteBookSource(_ source: BookSource) -> Bool {
-        // TODO: 从数据库删除
+        let ok = db.deleteBookSource(source.bookSourceUrl)
+        if ok { bookSources.removeAll { $0.id == source.id } }
+        return ok
+    }
+
+    func toggleBookSource(_ source: BookSource, enabled: Bool) {
+        db.toggleBookSource(source.bookSourceUrl, enabled: enabled)
+        if let idx = bookSources.firstIndex(where: { $0.id == source.id }) {
+            bookSources[idx].enabled = enabled
+        }
+    }
+
+    // MARK: - 书源导入
+
+    func importBookSourcesFromJSON(_ json: String) {
+        let (ok, fail) = bsService.importBookSources(jsonString: json)
         loadBookSources()
-        return true
+        alertMessage = "导入成功 \(ok) 个书源" + (fail > 0 ? "，失败 \(fail) 个" : "")
+        showAlert = true
     }
-    
-    /// 导出数据
-    func exportData() async {
-        DispatchQueue.main.async {
-            self.isExporting = true
-        }
-        
-        // TODO: 实现导出逻辑
-        // 导出项目：
-        // 1. 书籍列表（JSON）
-        // 2. 书源列表（JSON）
-        // 3. 阅读进度
-        // 4. 书签
-        // 5. 阅读偏好
-        
-        try? await Task.sleep(nanoseconds: 2_000_000_000)
-        
-        DispatchQueue.main.async {
-            self.isExporting = false
+
+    func importBookSourcesFromURL(_ urlStr: String) {
+        Task {
+            do {
+                let html = try await NetworkService.shared.get(url: urlStr)
+                await MainActor.run { self.importBookSourcesFromJSON(html) }
+            } catch {
+                await MainActor.run {
+                    self.alertMessage = "从URL导入失败: \(error.localizedDescription)"
+                    self.showAlert = true
+                }
+            }
         }
     }
-    
-    /// 导入数据
-    func importData(from url: URL) async {
-        DispatchQueue.main.async {
-            self.isImporting = true
+
+    // MARK: - 数据导出
+
+    func exportData(completion: @escaping (URL?) -> Void) {
+        Task {
+            let result = await dmService.exportAllData()
+            await MainActor.run {
+                switch result {
+                case .success(let url): completion(url)
+                case .failure(let err):
+                    self.alertMessage = "导出失败: \(err.localizedDescription)"
+                    self.showAlert = true
+                    completion(nil)
+                }
+            }
         }
-        
-        // TODO: 实现导入逻辑
-        // 导入项目：
-        // 1. 解析文件
-        // 2. 验证数据格式
-        // 3. 冲突处理
-        // 4. 写入数据库
-        
-        try? await Task.sleep(nanoseconds: 2_000_000_000)
-        
-        DispatchQueue.main.async {
-            self.isImporting = false
+    }
+
+    func importData(from url: URL) {
+        Task {
+            let result = await dmService.importAllData(from: url)
+            await MainActor.run {
+                if let err = result.error {
+                    self.alertMessage = "导入失败: \(err)"
+                } else {
+                    self.alertMessage = "已导入 \(result.books) 本书籍，\(result.sources) 个书源"
+                    self.loadBookSources()
+                }
+                self.showAlert = true
+            }
         }
+    }
+
+    // MARK: - 缓存管理
+
+    func clearCache(completion: @escaping (String) -> Void) {
+        let freed = dmService.clearCache()
+        completion(FileUtils.shared.formattedSize(freed))
+    }
+
+    func getCacheSize() -> String {
+        FileUtils.shared.formattedSize(dmService.getCacheSize())
+    }
+
+    var appVersion: String {
+        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "1.0.0"
+    }
+
+    var buildNumber: String {
+        (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "1"
     }
 }
