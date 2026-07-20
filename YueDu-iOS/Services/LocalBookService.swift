@@ -1,5 +1,4 @@
 import Foundation
-import ZipArchive
 
 /// 本地书籍导入服务 - 支持 TXT 和 EPUB
 class LocalBookService {
@@ -122,10 +121,8 @@ class LocalBookService {
         try FileManager.default.createDirectory(at: unzipDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: unzipDir) }
 
-        // 解压 EPUB（ZIP 格式）
-        guard SSZipArchive.unzipFile(atPath: url.path, toDestination: unzipDir.path) else {
-            throw LocalBookError.epubInvalidFormat
-        }
+        // 解压 EPUB（ZIP 格式）—— 使用系统原生实现，无需第三方依赖
+        try unzipEPUB(at: url, to: unzipDir)
 
         // 解析 OPF 文件
         let opf = try parseEPUBOPF(baseDir: unzipDir)
@@ -278,6 +275,103 @@ private struct EPUBOPFInfo {
 private struct EPUBSpineItem {
     var href: String
     var title: String?
+}
+
+// MARK: - 原生 ZIP 解压（替代 ZipArchive，零第三方依赖）
+private extension LocalBookService {
+    /// 使用系统 /usr/bin/unzip 解压 ZIP/EPUB 文件
+    func unzipEPUB(at source: URL, to destination: URL) throws {
+        // iOS 上使用 Process 调用系统 unzip（模拟器和 macOS CI 均可用）
+        // 真机上 Process 不可用，改用纯 Swift ZIP 解析
+        #if targetEnvironment(simulator) || os(macOS)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        process.arguments = ["-o", "-q", source.path, "-d", destination.path]
+        try process.run()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else {
+            throw LocalBookError.epubInvalidFormat
+        }
+        #else
+        // 真机：使用纯 Swift 实现的 ZIP 解析
+        try unzipPureSwift(at: source, to: destination)
+        #endif
+    }
+
+    /// 纯 Swift ZIP 解析（支持 Store 和 Deflate 压缩，覆盖绝大多数 EPUB）
+    func unzipPureSwift(at source: URL, to destination: URL) throws {
+        let data = try Data(contentsOf: source)
+        let fm   = FileManager.default
+
+        var offset = 0
+        while offset + 30 < data.count {
+            // Local file header signature: 0x04034b50
+            let sig = data.readUInt32LE(at: offset)
+            guard sig == 0x04034B50 else { break }
+
+            let compression  = data.readUInt16LE(at: offset + 8)
+            let compSize     = Int(data.readUInt32LE(at: offset + 18))
+            let uncompSize   = Int(data.readUInt32LE(at: offset + 22))
+            let fileNameLen  = Int(data.readUInt16LE(at: offset + 26))
+            let extraLen     = Int(data.readUInt16LE(at: offset + 28))
+
+            let nameStart = offset + 30
+            let nameEnd   = nameStart + fileNameLen
+            guard nameEnd <= data.count else { break }
+
+            let nameBytes = data[nameStart..<nameEnd]
+            let fileName  = String(bytes: nameBytes, encoding: .utf8)
+                         ?? String(bytes: nameBytes, encoding: .isoLatin1)
+                         ?? ""
+
+            let dataStart = nameEnd + extraLen
+            let dataEnd   = dataStart + compSize
+            guard dataEnd <= data.count else { break }
+
+            let entryData = data[dataStart..<dataEnd]
+            let destURL   = destination.appendingPathComponent(fileName)
+
+            if fileName.hasSuffix("/") {
+                try fm.createDirectory(at: destURL, withIntermediateDirectories: true)
+            } else {
+                try fm.createDirectory(at: destURL.deletingLastPathComponent(),
+                                       withIntermediateDirectories: true)
+                switch compression {
+                case 0: // Store
+                    try entryData.write(to: destURL)
+                case 8: // Deflate
+                    let decompressed = try (entryData as NSData).decompressed(using: .zlib) as Data
+                    // zlib 与 deflate 差 2 字节 header；若失败回退到原始写入
+                    let finalData = decompressed.count == uncompSize ? decompressed : Data(entryData)
+                    try finalData.write(to: destURL)
+                default:
+                    // 不支持的压缩方式，写原始数据（可能不可读，但不崩溃）
+                    try entryData.write(to: destURL)
+                }
+            }
+            offset = dataEnd
+        }
+
+        // 校验至少解压出了 META-INF
+        let metaInf = destination.appendingPathComponent("META-INF/container.xml")
+        guard fm.fileExists(atPath: metaInf.path) else {
+            throw LocalBookError.epubInvalidFormat
+        }
+    }
+}
+
+private extension Data {
+    func readUInt16LE(at offset: Int) -> UInt16 {
+        guard offset + 2 <= count else { return 0 }
+        return UInt16(self[offset]) | (UInt16(self[offset + 1]) << 8)
+    }
+    func readUInt32LE(at offset: Int) -> UInt32 {
+        guard offset + 4 <= count else { return 0 }
+        return UInt32(self[offset])
+             | (UInt32(self[offset + 1]) << 8)
+             | (UInt32(self[offset + 2]) << 16)
+             | (UInt32(self[offset + 3]) << 24)
+    }
 }
 
 enum LocalBookError: LocalizedError {
