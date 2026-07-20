@@ -1,157 +1,78 @@
 import Foundation
 
-/// 文件操作工具类
 class FileUtils {
     static let shared = FileUtils()
-    
-    private let fileManager = FileManager.default
-    
-    /// 获取文档目录路径
-    var documentsDirectory: URL {
-        let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0]
-    }
-    
-    /// 获取缓存目录路径
-    var cachesDirectory: URL {
-        let paths = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
-        return paths[0]
-    }
-    
-    /// 创建目录
-    func createDirectory(_ path: String) -> Bool {
-        do {
-            try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)
-            return true
-        } catch {
-            print("❌ 创建目录失败: \(error)")
-            return false
-        }
-    }
-    
-    /// 创建目录（URL）
+    private let fm = FileManager.default
+
+    var documentsDirectory: URL { fm.urls(for: .documentDirectory, in: .userDomainMask)[0] }
+    var cachesDirectory: URL    { fm.urls(for: .cachesDirectory,   in: .userDomainMask)[0] }
+
+    @discardableResult
     func createDirectory(_ url: URL) -> Bool {
-        return createDirectory(url.path)
+        do { try fm.createDirectory(at: url, withIntermediateDirectories: true); return true }
+        catch { print("❌ createDir: \(error)"); return false }
     }
-    
-    /// 检查文件是否存在
-    func fileExists(_ path: String) -> Bool {
-        return fileManager.fileExists(atPath: path)
+
+    func fileExists(_ path: String) -> Bool { fm.fileExists(atPath: path) }
+
+    @discardableResult
+    func delete(_ url: URL) -> Bool {
+        do { try fm.removeItem(at: url); return true }
+        catch { print("❌ delete: \(error)"); return false }
     }
-    
-    /// 删除文件
-    func deleteFile(_ path: String) -> Bool {
+
+    @discardableResult
+    func saveString(_ s: String, to path: String) -> Bool {
         do {
-            try fileManager.removeItem(atPath: path)
+            try fm.createDirectory(atPath: (path as NSString).deletingLastPathComponent,
+                                   withIntermediateDirectories: true)
+            try s.write(toFile: path, atomically: true, encoding: .utf8)
             return true
-        } catch {
-            print("❌ 删除文件失败: \(error)")
-            return false
-        }
+        } catch { print("❌ saveString: \(error)"); return false }
     }
-    
-    /// 保存字符串到文件
-    func saveString(_ content: String, to path: String) -> Bool {
-        do {
-            // 创建父目录
-            let parentPath = (path as NSString).deletingLastPathComponent
-            try fileManager.createDirectory(atPath: parentPath, withIntermediateDirectories: true)
-            
-            try content.write(toFile: path, atomically: true, encoding: .utf8)
-            return true
-        } catch {
-            print("❌ 保存文件失败: \(error)")
-            return false
-        }
-    }
-    
-    /// 读取文件内容
+
     func readString(from path: String) -> String? {
-        do {
-            return try String(contentsOfFile: path, encoding: .utf8)
-        } catch {
-            print("❌ 读取文件失败: \(error)")
-            return nil
-        }
+        try? String(contentsOfFile: path, encoding: .utf8)
     }
-    
-    /// 保存数据到文件
-    func saveData(_ data: Data, to path: String) -> Bool {
+
+    @discardableResult
+    func saveData(_ data: Data, to url: URL) -> Bool {
         do {
-            // 创建父目录
-            let parentPath = (path as NSString).deletingLastPathComponent
-            try fileManager.createDirectory(atPath: parentPath, withIntermediateDirectories: true)
-            
-            try data.write(to: URL(fileURLWithPath: path))
+            try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try data.write(to: url)
             return true
-        } catch {
-            print("❌ 保存数据失败: \(error)")
-            return false
-        }
+        } catch { print("❌ saveData: \(error)"); return false }
     }
-    
-    /// 读取数据
-    func readData(from path: String) -> Data? {
-        return fileManager.contents(atPath: path)
+
+    func readData(from url: URL) -> Data? { fm.contents(atPath: url.path) }
+
+    func saveJSON<T: Encodable>(_ obj: T, to path: String) -> Bool {
+        guard let data = try? JSONEncoder().encode(obj) else { return false }
+        return saveString(String(data: data, encoding: .utf8) ?? "", to: path)
     }
-    
-    /// 保存 JSON 对象
-    func saveJSON<T: Encodable>(_ object: T, to path: String) -> Bool {
-        do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            let data = try encoder.encode(object)
-            return saveData(data, to: path)
-        } catch {
-            print("❌ 保存 JSON 失败: \(error)")
-            return false
-        }
-    }
-    
-    /// 读取 JSON 对象
+
     func readJSON<T: Decodable>(from path: String, type: T.Type) -> T? {
-        guard let data = readData(from: path) else { return nil }
-        do {
-            let decoder = JSONDecoder()
-            return try decoder.decode(type, from: data)
-        } catch {
-            print("❌ 读取 JSON 失���: \(error)")
-            return nil
-        }
+        guard let data = fm.contents(atPath: path) else { return nil }
+        return try? JSONDecoder().decode(type, from: data)
     }
-    
-    /// 获取文件大小
-    func fileSize(_ path: String) -> Int64? {
-        do {
-            let attributes = try fileManager.attributesOfItem(atPath: path)
-            return attributes[.size] as? Int64
-        } catch {
-            return nil
-        }
+
+    func fileSize(_ url: URL) -> Int64 {
+        (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize.map { Int64($0) } ?? 0
     }
-    
-    /// 获取文件修改时间
-    func modificationDate(_ path: String) -> Date? {
-        do {
-            let attributes = try fileManager.attributesOfItem(atPath: path)
-            return attributes[.modificationDate] as? Date
-        } catch {
-            return nil
-        }
+
+    func formattedSize(_ bytes: Int64) -> String {
+        let kb = Double(bytes) / 1024
+        if kb < 1024 { return String(format: "%.1f KB", kb) }
+        let mb = kb / 1024
+        if mb < 1024 { return String(format: "%.1f MB", mb) }
+        return String(format: "%.1f GB", mb / 1024)
     }
-    
-    /// 清空缓存目录
+
+    @discardableResult
     func clearCaches() -> Bool {
-        do {
-            let files = try fileManager.contentsOfDirectory(atPath: cachesDirectory.path)
-            for file in files {
-                let path = cachesDirectory.appendingPathComponent(file).path
-                try fileManager.removeItem(atPath: path)
-            }
-            return true
-        } catch {
-            print("❌ 清空缓存失败: \(error)")
-            return false
-        }
+        guard let files = try? fm.contentsOfDirectory(at: cachesDirectory,
+                                                      includingPropertiesForKeys: nil) else { return false }
+        files.forEach { try? fm.removeItem(at: $0) }
+        return true
     }
 }
