@@ -1,21 +1,112 @@
 name: 构建 YueDu-iOS IPA（无证书版）
 
 on:
-  # 手动触发
   workflow_dispatch:
-  # 推送到 bd 分支时自动触发
   push:
     branches: [ bd ]
     paths-ignore:
       - '**.md'
       - '.github/**'
 
-# 显式声明写权限（修复 Release 403 问题）
+# 只需 read 权限，不需要 contents:write（移除了 Release 步骤）
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-ipa:
+    name: Build IPA on macOS
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      # ── 1. 检出代码 ──────────────────────────────────────────────────────────
+      - name: Checkout bd branch
+        uses: actions/checkout@v4
+        with:
+          ref: bd
+
+      # ── 2. 选择 Xcode 版本 ───────────────────────────────────────────────────
+      - name: Select Xcode 16
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          xcodebuild -version
+
+      # ── 3. 解析 SPM 依赖 ─────────────────────────────────────────────────────
+      - name: Resolve Swift Package dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project YueDu-iOS.xcodeproj \
+            -scheme YueDu-iOS \
+            -clonedSourcePackagesDirPath ./SourcePackages
+
+      # ── 4. 编译 .app（完全跳过代码签名）────────────────────────────────────
+      - name: Build .app (no signing)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project YueDu-iOS.xcodeproj \
+            -scheme YueDu-iOS \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            -clonedSourcePackagesDirPath ./SourcePackages \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            SWIFT_SERIALIZE_DEBUGGING_OPTIONS=NO \
+            BUILD_DIR="$PWD/build" \
+            2>&1 | tee build.log | grep -E "(error:|warning:|✅|❌|BUILD)" || true
+          # 明确检查构建结果
+          if grep -q "BUILD FAILED" build.log; then
+            echo "❌ Build failed, showing errors:"
+            grep "error:" build.log | head -30
+            exit 1
+          fi
+          echo "✅ Build succeeded"
+
+      # ── 5. 打包 .app → IPA ──────────────────────────────────────────────────
+      - name: Package .app into IPA
+        run: |
+          set -e
+          APP_PATH=$(find "$PWD/build" -name "YueDu-iOS.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ 未找到 .app，列出 build 目录："
+            find "$PWD/build" -maxdepth 4 -type d
+            exit 1
+          fi
+          echo "✅ 找到 .app: $APP_PATH"
+          mkdir -p /tmp/Payload
+          cp -r "$APP_PATH" /tmp/Payload/
+          cd /tmp
+          zip -r YueDu-iOS-unsigned.ipa Payload/
+          SIZE=$(du -sh YueDu-iOS-unsigned.ipa | cut -f1)
+          echo "✅ IPA 打包完成，大小: $SIZE"
+          cp YueDu-iOS-unsigned.ipa "$GITHUB_WORKSPACE/"
+
+      # ── 6. 上传 IPA 为 Artifact（90天，无需任何额外权限）────────────────────
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YueDu-iOS-unsigned-${{ github.run_number }}
+          path: YueDu-iOS-unsigned.ipa
+          retention-days: 90
+
+      # ── 7. 输出下载提示 ───────────────────────────────────────────────────────
+      - name: Print download instructions
+        run: |
+          echo "=================================================="
+          echo "🎉 IPA 构建成功！"
+          echo ""
+          echo "📥 下载地址："
+          echo "   https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "   → 页面底部 Artifacts → YueDu-iOS-unsigned-${{ github.run_number }}"
+          echo ""
+          echo "📱 安装方式（自签名）："
+          echo "   1. Sideloadly (免越狱): https://sideloadly.io"
+          echo "   2. AltStore   (免越狱): https://altstore.io"
+          echo "   3. esign      (需越狱或已签版)"
+          echo "=================================================="
+
     name: Build IPA on macOS
     runs-on: macos-15        # 带 Xcode 16，支持 Swift 5.10+
     timeout-minutes: 60
