@@ -37,33 +37,33 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		AA0000000000000000000100 /* YueDuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YueDuApp.swift; name = YueDuApp.swift; sourceTree = "<group>"; };
-		AA0000000000000000000102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; name = ContentView.swift; sourceTree = "<group>"; };
-		AA0000000000000000000104 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; name = Book.swift; sourceTree = "<group>"; };
-		AA0000000000000000000106 /* BookChapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookChapter.swift; name = BookChapter.swift; sourceTree = "<group>"; };
-		AA0000000000000000000108 /* BookSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSource.swift; name = BookSource.swift; sourceTree = "<group>"; };
-		AA000000000000000000010A /* ReadConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadConfig.swift; name = ReadConfig.swift; sourceTree = "<group>"; };
-		AA000000000000000000010C /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; name = SearchResult.swift; sourceTree = "<group>"; };
-		AA000000000000000000010E /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; name = DatabaseService.swift; sourceTree = "<group>"; };
-		AA0000000000000000000110 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; name = NetworkService.swift; sourceTree = "<group>"; };
-		AA0000000000000000000112 /* RuleEngineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngineService.swift; name = RuleEngineService.swift; sourceTree = "<group>"; };
-		AA0000000000000000000114 /* BookSourceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSourceService.swift; name = BookSourceService.swift; sourceTree = "<group>"; };
-		AA0000000000000000000116 /* LocalBookService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalBookService.swift; name = LocalBookService.swift; sourceTree = "<group>"; };
-		AA0000000000000000000118 /* DataManagementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManagementService.swift; name = DataManagementService.swift; sourceTree = "<group>"; };
-		AA000000000000000000011A /* BookshelfViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookshelfViewModel.swift; name = BookshelfViewModel.swift; sourceTree = "<group>"; };
-		AA000000000000000000011C /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; name = SearchViewModel.swift; sourceTree = "<group>"; };
-		AA000000000000000000011E /* ReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderViewModel.swift; name = ReaderViewModel.swift; sourceTree = "<group>"; };
-		AA0000000000000000000120 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; name = SettingsViewModel.swift; sourceTree = "<group>"; };
-		AA0000000000000000000122 /* BookshelfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookshelfView.swift; name = BookshelfView.swift; sourceTree = "<group>"; };
-		AA0000000000000000000124 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; name = SearchView.swift; sourceTree = "<group>"; };
-		AA0000000000000000000126 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; name = ReaderView.swift; sourceTree = "<group>"; };
-		AA0000000000000000000128 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; name = SettingsView.swift; sourceTree = "<group>"; };
-		AA000000000000000000012A /* HTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLParser.swift; name = HTMLParser.swift; sourceTree = "<group>"; };
-		AA000000000000000000012C /* StringUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringUtils.swift; name = StringUtils.swift; sourceTree = "<group>"; };
-		AA000000000000000000012E /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; name = DateUtils.swift; sourceTree = "<group>"; };
-		AA0000000000000000000130 /* FileUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUtils.swift; name = FileUtils.swift; sourceTree = "<group>"; };
-		AA000000000000000000000F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AA0000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0000000000000000000100 /* YueDuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = YueDuApp.swift; path = YueDu-iOS/App/YueDuApp.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = YueDu-iOS/App/ContentView.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000104 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Book.swift; path = YueDu-iOS/Models/Book.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000106 /* BookChapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BookChapter.swift; path = YueDu-iOS/Models/BookChapter.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000108 /* BookSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BookSource.swift; path = YueDu-iOS/Models/BookSource.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000010A /* ReadConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReadConfig.swift; path = YueDu-iOS/Models/ReadConfig.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000010C /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchResult.swift; path = YueDu-iOS/Models/SearchResult.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000010E /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DatabaseService.swift; path = YueDu-iOS/Services/DatabaseService.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000110 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkService.swift; path = YueDu-iOS/Services/NetworkService.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000112 /* RuleEngineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RuleEngineService.swift; path = YueDu-iOS/Services/RuleEngineService.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000114 /* BookSourceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BookSourceService.swift; path = YueDu-iOS/Services/BookSourceService.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000116 /* LocalBookService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalBookService.swift; path = YueDu-iOS/Services/LocalBookService.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000118 /* DataManagementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DataManagementService.swift; path = YueDu-iOS/Services/DataManagementService.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000011A /* BookshelfViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BookshelfViewModel.swift; path = YueDu-iOS/ViewModels/BookshelfViewModel.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000011C /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = YueDu-iOS/ViewModels/SearchViewModel.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000011E /* ReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReaderViewModel.swift; path = YueDu-iOS/ViewModels/ReaderViewModel.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000120 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsViewModel.swift; path = YueDu-iOS/ViewModels/SettingsViewModel.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000122 /* BookshelfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BookshelfView.swift; path = YueDu-iOS/Views/BookshelfView.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000124 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchView.swift; path = YueDu-iOS/Views/SearchView.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000126 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReaderView.swift; path = YueDu-iOS/Views/ReaderView.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000128 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = YueDu-iOS/Views/SettingsView.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000012A /* HTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HTMLParser.swift; path = YueDu-iOS/Utils/HTMLParser.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000012C /* StringUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StringUtils.swift; path = YueDu-iOS/Utils/StringUtils.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000012E /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DateUtils.swift; path = YueDu-iOS/Utils/DateUtils.swift; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000130 /* FileUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FileUtils.swift; path = YueDu-iOS/Utils/FileUtils.swift; sourceTree = SOURCE_ROOT; };
+		AA000000000000000000000F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = YueDu-iOS/Resources/Info.plist; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = YueDu-iOS/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		AA0000000000000000000008 /* YueDu-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "YueDu-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -228,21 +228,18 @@
 /* Begin PBXNativeTarget section */
 		AA0000000000000000000001 /* YueDu-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AA000000000000000000000A /* Build configuration list for PBXNativeTarget YueDu-iOS */;
+			buildConfigurationList = AA000000000000000000000A;
 			buildPhases = (
 				AA0000000000000000000003 /* Sources */,
 				AA0000000000000000000004 /* Resources */,
 				AA0000000000000000000005 /* Frameworks */,
 			);
-			buildRules = (
-			);
-			dependencies = (
-			);
+			buildRules = ();
+			dependencies = ();
 			name = "YueDu-iOS";
-			packageProductDependencies = (
-			);
+			packageProductDependencies = ();
 			productName = "YueDu-iOS";
-			productReference = AA0000000000000000000008 /* YueDu-iOS.app */;
+			productReference = AA0000000000000000000008;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -254,28 +251,18 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					AA0000000000000000000001 = {
-						CreatedOnToolsVersion = 15.0;
-					};
-				};
+				TargetAttributes = { AA0000000000000000000001 = { CreatedOnToolsVersion = 15.0; }; };
 			};
-			buildConfigurationList = AA0000000000000000000009 /* Build configuration list for PBXProject YueDu-iOS */;
+			buildConfigurationList = AA0000000000000000000009;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = zh_CN;
 			hasScannedForEncodings = 0;
-			knownRegions = (
-				en,
-				Base,
-				zh_CN,
-			);
+			knownRegions = (en, Base, zh_CN,);
 			mainGroup = AA0000000000000000000006;
-			productRefGroup = AA0000000000000000000007 /* Products */;
+			productRefGroup = AA0000000000000000000007;
 			projectDirPath = "";
 			projectRoot = "";
-			targets = (
-				AA0000000000000000000001 /* YueDu-iOS */,
-			);
+			targets = (AA0000000000000000000001,);
 		};
 /* End PBXProject section */
 
@@ -284,52 +271,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSET_CATALOG_COMPILER_OPTIMIZATION = space;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1","$(inherited)");
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -342,21 +291,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSET_CATALOG_COMPILER_OPTIMIZATION = space;
-				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -375,7 +315,6 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "YueDu-iOS/Resources/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LE_SWIFT_VERSION = 5.0;
 				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yuedu.ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -394,7 +333,6 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "YueDu-iOS/Resources/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LE_SWIFT_VERSION = 5.0;
 				MARKETING_VERSION = 3.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yuedu.ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -407,21 +345,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AA0000000000000000000009 /* Build configuration list for PBXProject YueDu-iOS */ = {
+		AA0000000000000000000009 = {
 			isa = XCConfigurationList;
-			buildConfigurations = (
-				AA000000000000000000000B /* Debug */,
-				AA000000000000000000000C /* Release */,
-			);
+			buildConfigurations = (AA000000000000000000000B /* Debug */, AA000000000000000000000C /* Release */,);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AA000000000000000000000A /* Build configuration list for PBXNativeTarget YueDu-iOS */ = {
+		AA000000000000000000000A = {
 			isa = XCConfigurationList;
-			buildConfigurations = (
-				AA000000000000000000000D /* Debug */,
-				AA000000000000000000000E /* Release */,
-			);
+			buildConfigurations = (AA000000000000000000000D /* Debug */, AA000000000000000000000E /* Release */,);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
