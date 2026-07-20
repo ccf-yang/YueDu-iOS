@@ -121,7 +121,7 @@ enum NetworkError: LocalizedError {
 extension String.Encoding {
     static let gbk: String.Encoding = {
         let cfEnc = CFStringEncodings.GB_18030_2000
-        let ns = CFStringConvertEncodingToNS(CFStringEncoding(cfEnc.rawValue))
-        return String.Encoding(rawValue: ns.unsignedLongValue)
+        let rawValue = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(cfEnc.rawValue))
+        return String.Encoding(rawValue: rawValue)
     }()
 }
