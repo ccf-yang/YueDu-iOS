@@ -23,9 +23,9 @@ jobs:
         with:
           ref: bd
 
-      - name: Select Xcode 16
+      - name: Select Xcode 16.2
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_17.2.app/Contents/Developer
           xcodebuild -version
 
       - name: Resolve Swift Package dependencies
