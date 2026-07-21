@@ -210,7 +210,7 @@ class LocalBookService {
 
         // 解析 manifest（id -> href 映射）
         var manifest: [String: String] = [:]
-        var titleMap: [String: String] = [:]
+        let titleMap: [String: String] = [:]
         let itemPattern = "<item[^>]+id=\"([^\"]+)\"[^>]+href=\"([^\"]+)\"[^>]*/>"
         if let re = try? NSRegularExpression(pattern: itemPattern),
            let data = opf.data(using: .utf8) {
@@ -339,10 +339,21 @@ private extension LocalBookService {
                 switch compression {
                 case 0: // Store
                     try entryData.write(to: destURL)
-                case 8: // Deflate
-                    let decompressed = try (entryData as NSData).decompressed(using: .zlib) as Data
-                    // zlib 与 deflate 差 2 字节 header；若失败回退到原始写入
-                    let finalData = decompressed.count == uncompSize ? decompressed : Data(entryData)
+                case 8: // Deflate (raw) — 用 zlib 解压时需跳过 2 字节 zlib header
+                    let finalData: Data
+                    if #available(iOS 13.0, *) {
+                        // 先尝试 raw deflate（无 zlib header），失败则加 zlib wrapper 再试
+                        if let d = try? (entryData as NSData).decompressed(using: .zlib) as Data, d.count == uncompSize {
+                            finalData = d
+                        } else {
+                            // 手动添加 zlib header (0x78 0x9C) 再解压
+                            var wrapped = Data([0x78, 0x9C])
+                            wrapped.append(entryData)
+                            finalData = (try? (wrapped as NSData).decompressed(using: .zlib) as Data) ?? Data(entryData)
+                        }
+                    } else {
+                        finalData = Data(entryData)
+                    }
                     try finalData.write(to: destURL)
                 default:
                     // 不支持的压缩方式，写原始数据（可能不可读，但不崩溃）
