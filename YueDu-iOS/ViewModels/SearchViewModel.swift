@@ -37,6 +37,7 @@ class SearchViewModel: ObservableObject {
         }
     }
 
+    @discardableResult
     func addToBookshelf(_ result: SearchResult) -> Bool {
         DatabaseService.shared.saveBook(result.book)
     }
