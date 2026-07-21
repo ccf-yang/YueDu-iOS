@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct BookshelfView: View {
     @StateObject private var vm = BookshelfViewModel()
