@@ -569,6 +569,9 @@ class DatabaseService {
             let time = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 6)))
             let note = colText(stmt, 7)
             var bm = Bookmark(bookUrl: bUrl, chapterIndex: ci, chapterTitle: ct, chapterPos: cp, content: content, note: note)
+            // 用数据库中存储的 id 和 createTime 覆盖构造器生成的默认值
+            bm = Bookmark(id: id, bookUrl: bUrl, chapterIndex: ci, chapterTitle: ct,
+                          chapterPos: cp, content: content, createTime: time, note: note)
             bms.append(bm)
         }
         return bms
