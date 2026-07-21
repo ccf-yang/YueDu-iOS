@@ -39,4 +39,17 @@ struct Bookmark: Identifiable, Codable {
         self.createTime = Date()
         self.note = note
     }
+
+    /// 从持久化存储恢复时使用（保留原始 id 和 createTime）
+    init(id: String, bookUrl: String, chapterIndex: Int, chapterTitle: String,
+         chapterPos: Int, content: String, createTime: Date, note: String? = nil) {
+        self.id = id
+        self.bookUrl = bookUrl
+        self.chapterIndex = chapterIndex
+        self.chapterTitle = chapterTitle
+        self.chapterPos = chapterPos
+        self.content = content
+        self.createTime = createTime
+        self.note = note
+    }
 }
