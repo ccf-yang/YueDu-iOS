@@ -27,7 +27,7 @@ class LocalBookService {
         // 自动分章
         let chapters = splitTXTIntoChapters(content: content, bookUrl: bookId)
 
-        var book = Book(
+        let book = Book(
             id: bookId, name: name, author: "未知作者",
             origin: "local", originName: "本地",
             totalChapterNum: chapters.count,
