@@ -28,6 +28,10 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
 
+      - name: Download iOS Platform
+        run: |
+          xcodebuild -downloadPlatform iOS
+
       - name: Resolve Swift Package dependencies
         run: |
           xcodebuild -resolvePackageDependencies \
