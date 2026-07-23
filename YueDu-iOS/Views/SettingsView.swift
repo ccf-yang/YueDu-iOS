@@ -204,7 +204,7 @@ struct BookSourceRow: View {
         HStack {
             Toggle("", isOn: $enabled)
                 .labelsHidden()
-                .onChange(of: enabled) { _, newValue in onToggle(newValue) }
+                .onChange(of: enabled) { newValue in onToggle(newValue) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(source.bookSourceName).font(.headline)
                 HStack(spacing: 6) {
