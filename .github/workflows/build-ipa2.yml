@@ -1,4 +1,4 @@
-name: 构建 YueDu-iOS IPA（无证书版）
+name: 构建 IPA
 
 on:
   workflow_dispatch:
@@ -28,9 +28,10 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
 
-      - name: Download iOS Platform
+      - name: Setup Xcode Environment
         run: |
-          xcodebuild -downloadPlatform iOS
+          sudo xcodebuild -runFirstLaunch
+          sudo xcodebuild -license accept
 
       - name: Resolve Swift Package dependencies
         run: |
