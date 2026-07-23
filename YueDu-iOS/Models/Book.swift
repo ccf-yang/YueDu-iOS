@@ -1,6 +1,6 @@
 import Foundation
 
-/// 书籍数据模型  
+/// 书籍数据模型 
 struct Book: Identifiable, Codable {
     let id: String
     var name: String
