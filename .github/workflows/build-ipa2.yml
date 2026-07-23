@@ -59,6 +59,7 @@ jobs:
             EXCLUDED_ARCHS="armv7 armv7s" \
             BUILD_DIR="$PWD/build" \
             SDKROOT=iphoneos \
+            ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=NO \
             2>&1 | tee build.log | grep -E "(error:|warning:|BUILD)" || true
           if grep -q "BUILD FAILED" build.log; then
