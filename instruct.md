@@ -26,30 +26,66 @@ CI Workflow 支持两种触发方式：
 
 ### 1.2 手动触发 Workflow（无需提交代码）
 
-**步骤如下：**
+> ⚠️ **重要说明**：GitHub 的「Run workflow」按钮**不在** workflow 运行列表页面，需要先点击左侧具体的 Workflow 名称才能看到。
 
-1. 打开仓库 Actions 页面：
-   ```
-   https://github.com/ccf-yang/YueDu-iOS/actions/workflows/build-ipa.yml
-   ```
+**详细步骤（含截图说明）：**
 
-2. 点击页面左侧的 **「构建 YueDu-iOS IPA（无证书版）」**
+**第一步**：打开 Actions 总览页，点击左侧列表中的 Workflow 名称
 
-3. 点击右侧的 **「Run workflow」** 按钮（绿色按钮）
+```
+https://github.com/ccf-yang/YueDu-iOS/actions
+```
 
-4. 在弹出的下拉框中：
-   - Branch 选择 **`bd`**
-   - 点击 **「Run workflow」** 确认
+在左侧 **「Actions」→「All workflows」** 下，找到并点击：
+```
+构建 YueDu-iOS IPA（无证书版）
+```
 
-5. 页面自动刷新后，会出现一条新的运行记录，状态为 🟡 **In progress**
+**第二步**：进入该 Workflow 的专属页面后，右侧过滤栏上方会出现 **「Run workflow」** 蓝色/绿色按钮
 
-6. 点击进入该记录，可查看实时日志
+```
+https://github.com/ccf-yang/YueDu-iOS/actions/workflows/build-ipa.yml
+```
 
-> **注意**：手动触发需要仓库的 **Write** 或 **Admin** 权限。
+页面布局示意：
+```
+Actions > 构建 YueDu-iOS IPA（无证书版）
+                                        [Run workflow ▼]  ← 按钮在这里
+Filter workflow runs
+────────────────────────────────────────
+  #23  fix: change var book...   bd  7分钟前
+  #22  Manually run by ...       bd  7分钟前
+```
+
+**第三步**：点击 **「Run workflow」** 按钮，弹出下拉框：
+- Branch 选择 **`bd`**
+- 点击绿色 **「Run workflow」** 按钮确认
+
+**第四步**：页面刷新后出现新记录（状态 🟡 In progress），点击进入查看实时日志
+
+> **注意**：
+> - 如果整个 Actions 页面左侧都看不到该 Workflow，说明 workflow 文件还未推送到仓库默认分支
+> - 手动触发需要对仓库有 **Write** 或 **Admin** 权限（仓库 Owner 默认满足）
+> - 若按钮仍不可见，可用 API 触发：见下方「1.3 通过 API 手动触发」
 
 ---
 
-### 1.3 查看构建结果
+### 1.3 通过 API 手动触发（备用方案）
+
+如果网页按钮不可见，可用以下 curl 命令直接触发（需要 GitHub Token）：
+
+```bash
+curl -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer <YOUR_GITHUB_TOKEN>" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  https://api.github.com/repos/ccf-yang/YueDu-iOS/actions/workflows/build-ipa.yml/dispatches \
+  -d '{"ref":"bd"}'
+```
+
+返回 HTTP 204 表示触发成功，随后在 Actions 页面即可看到新的运行记录。
+
+
 
 构建成功后（约 5-10 分钟），在 Actions 运行详情页底部的 **Artifacts** 区域下载 IPA：
 
